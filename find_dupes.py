@@ -1,14 +1,14 @@
 #!/usr/bin/python3
 #
-
+# Kodiak Firesmith <kfiresmith@gmail.com>
 
 import argparse
+import hashlib
 import os
 import sys
-import hashlib
 
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description="Find duplicate files within a folder tree")
 parser.add_argument("target_path", help="- base path to recursively search")
 args = parser.parse_args()
 
