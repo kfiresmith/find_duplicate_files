@@ -1,5 +1,10 @@
+#!/usr/bin/python3
+#
+
+
 import argparse
 import os
+import sys
 import hashlib
 
 
@@ -13,40 +18,43 @@ try:
     os.chdir(target_directory)
 except PermissionError:
     print("Couldn't enter target directory")
-    os._exit(2)
+    sys.exit(2)
 except FileNotFoundError:
     print("Couldn't find requested path")
-    os._exit(3)
+    sys.exit(3)
 
-filesums = dict()
-itempath = ""
+file_checksums = dict()
+item_path = ""
 
 for root, dirs, files in os.walk(str(os.getcwd()), "*"):
     for name in files:
         try:
-            itempath = os.path.join(root, name)
+            item_path = os.path.join(root, name)
             try:
                 '''
                 Instead of reading in the whole file, just read up to the 1st megabyte of the file; should be plenty
                 Hash that first 1MB and look for the hash as an existing key, if it's not in there, the file in question
                 is not a duplicate file.
                 '''
-                itemsum = hashlib.sha1(open(itempath, 'rb').read(1000000)).hexdigest()
-                if itemsum in filesums:
-                    print("Found duplicate file checksum: " + itemsum + " in both: " + itempath + " and in: " + filesums[itemsum])
+                item_checksum = hashlib.sha1(open(item_path, 'rb').read(1000000)).hexdigest()
+                if item_checksum in file_checksums:
+                    print(
+                        "Found duplicate file checksum: " + item_checksum + " " + item_path +
+                        " " + file_checksums[item_checksum]
+                    )
 
                 # Add new item to dictionary
-                filesums[itemsum] = itempath
+                file_checksums[item_checksum] = item_path
             # Dodge symlinks, sockets etc
             except (FileNotFoundError, OSError):
-                print("Skipping problematic file: " + itempath)
+                print("Skipping problematic file: " + item_path)
                 pass
             except MemoryError:
                 print("Whoops ate all the RAM...")
                 pass
         # Accept that there may be files we can't access
         except PermissionError:
-            print("Hit permissions problem on: " + itempath)
+            print("Hit permissions problem on: " + item_path)
             pass
 
-os._exit(0)
+sys.exit(0)
