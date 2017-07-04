@@ -1,22 +1,37 @@
+import argparse
 import os
 import hashlib
-    # TODO: only hash the start of each large file file; VM disks eat all the ram!
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument("target_path", help="- base path to recursively search")
+args = parser.parse_args()
+
+target_directory = args.target_path
 
 try:
-    os.chdir("/")
+    os.chdir(target_directory)
 except PermissionError:
     print("Couldn't enter target directory")
+    os._exit(2)
+except FileNotFoundError:
+    print("Couldn't find requested path")
+    os._exit(3)
 
 filesums = dict()
+itempath = ""
 
 for root, dirs, files in os.walk(str(os.getcwd()), "*"):
     for name in files:
         try:
             itempath = os.path.join(root, name)
             try:
-                itemsum = hashlib.sha1(open(itempath, 'rb').read()).hexdigest()
+                '''
+                Instead of reading in the whole file, just read up to the 1st megabyte of the file; should be plenty
+                Hash that first 1MB and look for the hash as an existing key, if it's not in there, the file in question
+                is not a duplicate file.
+                '''
+                itemsum = hashlib.sha1(open(itempath, 'rb').read(1000000)).hexdigest()
                 if itemsum in filesums:
                     print("Found duplicate file checksum: " + itemsum + " in both: " + itempath + " and in: " + filesums[itemsum])
 
@@ -34,5 +49,4 @@ for root, dirs, files in os.walk(str(os.getcwd()), "*"):
             print("Hit permissions problem on: " + itempath)
             pass
 
-#print(filesums) # Debug for small tests
 os._exit(0)
