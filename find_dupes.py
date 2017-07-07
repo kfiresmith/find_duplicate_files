@@ -37,10 +37,9 @@ class Main():
                     item_checksum = hashlib.sha1(open(item_path, 'rb').read(1000000)).hexdigest()
                     if item_checksum in file_checksums:
                         print(
-                            "Found duplicate file checksum: " + item_checksum + " " + item_path +
-                            " " + file_checksums[item_checksum]
+                            "Found duplicate checksum: {} {} {}".format(item_checksum,
+                            item_path, file_checksums[item_checksum])
                         )
-
                     # Add new item to dictionary
                     file_checksums[item_checksum] = item_path
                 # Dodge symlinks, sockets etc
